@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🏛 遺跡解析ツール v2</title>
+  <style>
+    :root {
+      --bg: #0d1117; --surface: #161b22; --border: #30363d;
+      --accent: #7c3aed; --accent2: #a855f7; --text: #e6edf3;
+      --muted: #8b949e; --success: #238636; --error: #da3633;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; min-height: 100vh; padding: 24px 16px; }
+    .container { max-width: 960px; margin: 0 auto; }
+
+    /* ヘッダー */
+    .header { text-align: center; margin-bottom: 32px; }
+    .header h1 { font-size: 2rem; font-weight: 700; }
+    .header p { color: var(--muted); margin-top: 8px; }
+
+    /* APIキー欄 */
+    .key-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; }
+    .key-section label { font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 6px; letter-spacing: 0.05em; text-transform: uppercase; }
+    .key-row { display: flex; gap: 8px; }
+    .key-row input { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 8px 12px; font-family: monospace; font-size: 0.9rem; }
+    .key-row input:focus { outline: none; border-color: var(--accent); }
+    .key-status { font-size: 0.8rem; margin-top: 6px; min-height: 18px; }
+    .key-status.ok { color: #3fb950; }
+    .key-status.err { color: #f85149; }
+    .buy-link { display: inline-block; margin-top: 8px; font-size: 0.8rem; color: var(--accent2); text-decoration: none; }
+    .buy-link:hover { text-decoration: underline; }
+
+    /* メインレイアウト */
+    .main { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 680px) { .main { grid-template-columns: 1fr; } }
+
+    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .panel-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 12px; }
+
+    .selects { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    select { background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 7px 10px; width: 100%; font-size: 0.9rem; }
+    select:focus { outline: none; border-color: var(--accent); }
+
+    textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 10px 12px; font-family: monospace; font-size: 0.85rem; resize: vertical; min-height: 220px; line-height: 1.6; }
+    textarea:focus { outline: none; border-color: var(--accent); }
+
+    /* 実行ボタン */
+    .btn-run { width: 100%; margin-top: 14px; padding: 13px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+    .btn-run:hover { opacity: 0.9; }
+    .btn-run:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ステータス */
+    .status-bar { margin-top: 10px; padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; min-height: 40px; display: none; }
+    .status-bar.loading { display: block; background: #1c2235; border: 1px solid #3b5998; color: #79b8ff; }
+    .status-bar.error { display: block; background: #2d1a1a; border: 1px solid var(--error); color: #f85149; }
+
+    /* 結果パネル */
+    .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .result-area { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px; min-height: 340px; font-size: 0.875rem; line-height: 1.7; white-space: pre-wrap; color: var(--muted); }
+    .result-area.has-result { color: var(--text); }
+    .btn-copy { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 5px 12px; font-size: 0.8rem; cursor: pointer; }
+    .btn-copy:hover { border-color: var(--accent); }
+
+    .receipt-tag { margin-top: 10px; font-size: 0.75rem; color: var(--muted); font-family: monospace; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🏛 遺跡解析ツール v2</h1>
+    <p>レガシーコードを Gemini 2.5 Flash + Claude Haiku で解析・変換</p>
+  </div>
+
+  <!-- APIキー入力 -->
+  <div class="key-section">
+    <label>購入者 APIキー</label>
+    <div class="key-row">
+      <input type="password" id="apiKey" placeholder="ft-key-xxxxxxxxxxxx" autocomplete="off" />
+    </div>
+    <div class="key-status" id="keyStatus"></div>
+    <a class="buy-link" href="#" id="buyLink">▶ APIキーを購入する（準備中）</a>
+  </div>
+
+  <div class="main">
+    <!-- 左：入力パネル -->
+    <div class="panel">
+      <div class="panel-label">入力</div>
+      <div class="selects">
+        <select id="lang">
+          <option value="VB6">VB6</option>
+          <option value="COBOL">COBOL</option>
+          <option value="PowerShell">PowerShell</option>
+          <option value="VBA">VBA</option>
+          <option value="Delphi">Delphi</option>
+          <option value="C">C</option>
+          <option value="Unknown">不明</option>
+        </select>
+        <select id="targetLang">
+          <option value="TypeScript">TypeScript</option>
+          <option value="Python">Python</option>
+          <option value="Go">Go</option>
+          <option value="Rust">Rust</option>
+          <option value="Java">Java</option>
+        </select>
+      </div>
+      <textarea id="code" placeholder="ここにレガシーコードを貼り付けてください...">Sub Hello()
+  MsgBox "Hi"
+End Sub</textarea>
+      <button class="btn-run" id="btnRun" onclick="analyze()">🚀 解析実行</button>
+      <div class="status-bar" id="statusBar"></div>
+    </div>
+
+    <!-- 右：結果パネル -->
+    <div class="panel">
+      <div class="result-header">
+        <div class="panel-label">解析結果</div>
+        <button class="btn-copy" onclick="copyResult()">コピー</button>
+      </div>
+      <div class="result-area" id="resultArea">解析結果がここに表示されます</div>
+      <div class="receipt-tag" id="receiptTag"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ★ デプロイ後にCloudflare WorkerのURLに変更する
+  const WORKER_URL = "https://legacy-analyzer.furitsukatsuma.workers.dev";
+
+  async function analyze() {
+    const apiKey = document.getElementById("apiKey").value.trim();
+    const code   = document.getElementById("code").value.trim();
+    const lang   = document.getElementById("lang").value;
+    const targetLang = document.getElementById("targetLang").value;
+    const btn    = document.getElementById("btnRun");
+    const status = document.getElementById("statusBar");
+    const result = document.getElementById("resultArea");
+    const receipt = document.getElementById("receiptTag");
+
+    // バリデーション
+    if (!apiKey) {
+      showKeyStatus("APIキーを入力してください", false);
+      return;
+    }
+    if (!code) {
+      setStatus("error", "コードを入力してください");
+      return;
+    }
+
+    // 実行中UI
+    btn.disabled = true;
+    setStatus("loading", "⏳ Gemini + Claude Haiku で解析中... (10〜30秒)");
+    result.textContent = "";
+    result.classList.remove("has-result");
+    receipt.textContent = "";
+
+    try {
+      const res = await fetch(WORKER_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": apiKey,
+        },
+        body: JSON.stringify({ code, lang, targetLang }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        setStatus("error", `❌ ${data.error || "エラーが発生しました"}`);
+        if (res.status === 401 || res.status === 403) {
+          showKeyStatus(data.error, false);
+        }
+        return;
+      }
+
+      // 成功
+      status.style.display = "none";
+      showKeyStatus("✅ キー有効", true);
+      result.textContent = data.result;
+      result.classList.add("has-result");
+      if (data.receipt_id) {
+        receipt.textContent = `🧾 領収書ID: ${data.receipt_id}`;
+      }
+
+    } catch (e) {
+      setStatus("error", `❌ 接続エラー: ${e.message}`);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function setStatus(type, msg) {
+    const el = document.getElementById("statusBar");
+    el.className = `status-bar ${type}`;
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+
+  function showKeyStatus(msg, ok) {
+    const el = document.getElementById("keyStatus");
+    el.textContent = msg;
+    el.className = `key-status ${ok ? "ok" : "err"}`;
+  }
+
+  function copyResult() {
+    const text = document.getElementById("resultArea").textContent;
+    if (text && text !== "解析結果がここに表示されます") {
+      navigator.clipboard.writeText(text);
+      const btn = document.querySelector(".btn-copy");
+      btn.textContent = "✅ コピー済み";
+      setTimeout(() => btn.textContent = "コピー", 1500);
+    }
+  }
+</script>
+</body>
+</html>
