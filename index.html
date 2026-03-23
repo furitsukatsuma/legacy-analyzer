@@ -1,217 +1,232 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🏛 遺跡解析ツール v2</title>
-  <style>
-    :root {
-      --bg: #0d1117; --surface: #161b22; --border: #30363d;
-      --accent: #7c3aed; --accent2: #a855f7; --text: #e6edf3;
-      --muted: #8b949e; --success: #238636; --error: #da3633;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; min-height: 100vh; padding: 24px 16px; }
-    .container { max-width: 960px; margin: 0 auto; }
-
-    /* ヘッダー */
-    .header { text-align: center; margin-bottom: 32px; }
-    .header h1 { font-size: 2rem; font-weight: 700; }
-    .header p { color: var(--muted); margin-top: 8px; }
-
-    /* APIキー欄 */
-    .key-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; }
-    .key-section label { font-size: 0.8rem; color: var(--muted); display: block; margin-bottom: 6px; letter-spacing: 0.05em; text-transform: uppercase; }
-    .key-row { display: flex; gap: 8px; }
-    .key-row input { flex: 1; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 8px 12px; font-family: monospace; font-size: 0.9rem; }
-    .key-row input:focus { outline: none; border-color: var(--accent); }
-    .key-status { font-size: 0.8rem; margin-top: 6px; min-height: 18px; }
-    .key-status.ok { color: #3fb950; }
-    .key-status.err { color: #f85149; }
-    .buy-link { display: inline-block; margin-top: 8px; font-size: 0.8rem; color: var(--accent2); text-decoration: none; }
-    .buy-link:hover { text-decoration: underline; }
-
-    /* メインレイアウト */
-    .main { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 680px) { .main { grid-template-columns: 1fr; } }
-
-    .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
-    .panel-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 12px; }
-
-    .selects { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-    select { background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 7px 10px; width: 100%; font-size: 0.9rem; }
-    select:focus { outline: none; border-color: var(--accent); }
-
-    textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 10px 12px; font-family: monospace; font-size: 0.85rem; resize: vertical; min-height: 220px; line-height: 1.6; }
-    textarea:focus { outline: none; border-color: var(--accent); }
-
-    /* 実行ボタン */
-    .btn-run { width: 100%; margin-top: 14px; padding: 13px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-    .btn-run:hover { opacity: 0.9; }
-    .btn-run:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    /* ステータス */
-    .status-bar { margin-top: 10px; padding: 10px 14px; border-radius: 6px; font-size: 0.85rem; min-height: 40px; display: none; }
-    .status-bar.loading { display: block; background: #1c2235; border: 1px solid #3b5998; color: #79b8ff; }
-    .status-bar.error { display: block; background: #2d1a1a; border: 1px solid var(--error); color: #f85149; }
-
-    /* 結果パネル */
-    .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .result-area { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px; min-height: 340px; font-size: 0.875rem; line-height: 1.7; white-space: pre-wrap; color: var(--muted); }
-    .result-area.has-result { color: var(--text); }
-    .btn-copy { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 5px 12px; font-size: 0.8rem; cursor: pointer; }
-    .btn-copy:hover { border-color: var(--accent); }
-
-    .receipt-tag { margin-top: 10px; font-size: 0.75rem; color: var(--muted); font-family: monospace; }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>🏛 遺跡解析ツール v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080c10;--surface:#0d1520;--surface2:#111d2e;--border:#1e3a5f;--accent:#00d4ff;--accent2:#7c3aed;--gold:#f59e0b;--text:#e2f0ff;--muted:#6b8cad;--success:#10b981;--error:#ef4444}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;min-height:100vh;background-image:radial-gradient(ellipse at 20% 0%,rgba(0,212,255,.05) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(124,58,237,.05) 0%,transparent 60%)}
+.header{border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;background:rgba(8,12,16,.9);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:8px}
+.logo{font-family:'Space Mono',monospace;font-size:1rem;color:var(--accent)}
+.logo span{color:var(--muted)}
+.lang-tabs{display:flex;gap:4px;flex-wrap:wrap}
+.lang-tab{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:4px 9px;font-size:.72rem;cursor:pointer;transition:all .15s;font-family:'Space Mono',monospace}
+.lang-tab:hover{border-color:var(--accent);color:var(--accent)}
+.lang-tab.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:700}
+.container{max-width:1200px;margin:0 auto;padding:20px 16px}
+.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+@media(max-width:680px){.setup-grid,.main-grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden}
+.panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.3}
+.panel-title{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:.72rem;color:var(--muted);margin-bottom:4px;font-family:'Space Mono',monospace}
+.field input,.field select,.field textarea{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px 11px;font-size:.85rem;transition:border-color .15s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,212,255,.1)}
+.field textarea{resize:vertical;min-height:190px;font-family:'Space Mono',monospace;font-size:.78rem;line-height:1.6}
+.key-status{font-size:.72rem;margin-top:4px;min-height:15px;font-family:'Space Mono',monospace}
+.key-status.ok{color:var(--success)}.key-status.err{color:var(--error)}
+.byok-note{background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.15);border-radius:6px;padding:9px 11px;font-size:.72rem;color:var(--muted);margin-top:6px}
+.byok-note a{color:var(--accent);text-decoration:none}
+.byok-note a:hover{text-decoration:underline}
+.model-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.model-card{border:1px solid var(--border);border-radius:8px;padding:9px 11px;cursor:pointer;transition:all .15s;background:var(--bg)}
+.model-card:hover{border-color:var(--accent)}
+.model-card.selected{border-color:var(--accent);background:rgba(0,212,255,.08)}
+.model-name{font-size:.8rem;font-weight:700;margin-bottom:2px}
+.model-desc{font-size:.68rem;color:var(--muted)}
+.model-badge{display:inline-block;font-size:.6rem;padding:1px 5px;border-radius:3px;margin-bottom:3px;font-family:'Space Mono',monospace}
+.badge-free{background:rgba(16,185,129,.2);color:var(--success)}
+.badge-paid{background:rgba(245,158,11,.2);color:var(--gold)}
+.mode-tabs{display:flex;border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-bottom:12px}
+.mode-tab{flex:1;background:transparent;border:none;color:var(--muted);padding:9px;font-size:.82rem;cursor:pointer;transition:all .15s;font-family:'Noto Sans JP',sans-serif}
+.mode-tab.active{background:var(--accent);color:#000;font-weight:700}
+.mode-tab:hover:not(.active){background:var(--surface2)}
+.selects-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.btn-run{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;margin-top:10px;font-family:'Noto Sans JP',sans-serif}
+.btn-run:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,212,255,.3)}
+.btn-run:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.status-bar{margin-top:9px;padding:9px 12px;border-radius:6px;font-size:.8rem;display:none;font-family:'Space Mono',monospace}
+.status-bar.loading{display:block;background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.25);color:var(--accent)}
+.status-bar.error{display:block;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.25);color:var(--error)}
+.main-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.result-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.result-area{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:14px;min-height:280px;max-height:580px;overflow-y:auto;font-size:.82rem;line-height:1.8;white-space:pre-wrap;color:var(--muted);font-family:'Space Mono',monospace}
+.result-area.has-result{color:var(--text)}
+.btn-copy{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:4px 12px;font-size:.78rem;cursor:pointer;transition:all .15s}
+.btn-copy:hover{border-color:var(--accent)}
+.receipt-tag{margin-top:7px;font-size:.68rem;color:var(--muted);font-family:'Space Mono',monospace}
+</style>
 </head>
 <body>
+<header class="header">
+  <div class="logo">🏛 <span>LEGACY</span>ANALYZER <span>v3</span></div>
+  <div class="lang-tabs">
+    <button class="lang-tab active" onclick="setLang('ja',this)">🇯🇵 日本語</button>
+    <button class="lang-tab" onclick="setLang('en',this)">🇺🇸 EN</button>
+    <button class="lang-tab" onclick="setLang('zh',this)">🇨🇳 中文</button>
+    <button class="lang-tab" onclick="setLang('ko',this)">🇰🇷 한국어</button>
+    <button class="lang-tab" onclick="setLang('hi',this)">🇮🇳 हिंदी</button>
+    <button class="lang-tab" onclick="setLang('ne',this)">🇳🇵 नेपाली</button>
+  </div>
+</header>
 <div class="container">
-  <div class="header">
-    <h1>🏛 遺跡解析ツール v2</h1>
-    <p>レガシーコードを Gemini 2.5 Flash + Claude Haiku で解析・変換</p>
-  </div>
-
-  <!-- APIキー入力 -->
-  <div class="key-section">
-    <label>購入者 APIキー</label>
-    <div class="key-row">
-      <input type="password" id="apiKey" placeholder="ft-key-xxxxxxxxxxxx" autocomplete="off" />
-    </div>
-    <div class="key-status" id="keyStatus"></div>
-    <a class="buy-link" href="#" id="buyLink">▶ APIキーを購入する（準備中）</a>
-  </div>
-
-  <div class="main">
-    <!-- 左：入力パネル -->
+  <div class="setup-grid">
     <div class="panel">
-      <div class="panel-label">入力</div>
-      <div class="selects">
-        <select id="lang">
-          <option value="VB6">VB6</option>
-          <option value="COBOL">COBOL</option>
-          <option value="PowerShell">PowerShell</option>
-          <option value="VBA">VBA</option>
-          <option value="Delphi">Delphi</option>
-          <option value="C">C</option>
-          <option value="Unknown">不明</option>
+      <div class="panel-title" id="t-apikeys">🔑 API設定</div>
+      <div class="field">
+        <label id="t-purchaseKey">購入者キー（ft-key-...）</label>
+        <input type="password" id="purchaseKey" placeholder="ft-key-xxxxxxxxxxxx"/>
+        <div class="key-status" id="keyStatus"></div>
+      </div>
+      <div class="byok-note">
+        💡 <strong id="t-byokTitle">BYOK モード</strong> — <span id="t-byokDesc">自分のAPIキーを使うとコストが0になります</span><br><br>
+        <span id="t-geminiGet">Gemini キー:</span> <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com</a><br>
+        <span id="t-anthropicGet">Anthropic キー:</span> <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label id="t-geminiKey">Gemini APIキー（任意・BYOKモード）</label>
+        <input type="password" id="geminiKey" placeholder="AIza..."/>
+      </div>
+      <div class="field">
+        <label id="t-anthropicKey">Anthropic APIキー（任意・BYOKモード）</label>
+        <input type="password" id="anthropicKey" placeholder="sk-ant-..."/>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title" id="t-modelSelect">🤖 モデル選択</div>
+      <div class="model-grid">
+        <div class="model-card selected" onclick="selectModel(this,'gemini-2.5-flash','gemini')">
+          <div class="model-badge badge-free">FREE</div>
+          <div class="model-name">Gemini 2.5 Flash</div>
+          <div class="model-desc" id="t-m1">Google・高速・無料枠あり</div>
+        </div>
+        <div class="model-card" onclick="selectModel(this,'claude-haiku-4-5-20251001','anthropic')">
+          <div class="model-badge badge-paid">PAID</div>
+          <div class="model-name">Claude Haiku</div>
+          <div class="model-desc" id="t-m2">Anthropic・軽量・安価</div>
+        </div>
+        <div class="model-card" onclick="selectModel(this,'claude-sonnet-4-6','anthropic')">
+          <div class="model-badge badge-paid">PAID</div>
+          <div class="model-name">Claude Sonnet</div>
+          <div class="model-desc" id="t-m3">Anthropic・高品質</div>
+        </div>
+        <div class="model-card" onclick="selectModel(this,'gpt-4o-mini','openai')">
+          <div class="model-badge badge-free">FREE枠</div>
+          <div class="model-name">GPT-4o mini</div>
+          <div class="model-desc" id="t-m4">OpenAI・バランス型</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="main-grid">
+    <div class="panel">
+      <div class="panel-title" id="t-inputPanel">📥 入力</div>
+      <div class="mode-tabs">
+        <button class="mode-tab active" id="modeCode" onclick="setMode('code')" id="t-modeCode">💻 コード変換</button>
+        <button class="mode-tab" id="modeReport" onclick="setMode('report')">📊 ビジネスレポート</button>
+      </div>
+      <div class="selects-row">
+        <select id="srcLang">
+          <option value="VB6">VB6</option><option value="COBOL">COBOL</option>
+          <option value="PowerShell">PowerShell</option><option value="VBA">VBA</option>
+          <option value="Delphi">Delphi</option><option value="C">C</option>
+          <option value="FORTRAN">FORTRAN</option><option value="Unknown">不明</option>
         </select>
         <select id="targetLang">
-          <option value="TypeScript">TypeScript</option>
-          <option value="Python">Python</option>
-          <option value="Go">Go</option>
-          <option value="Rust">Rust</option>
-          <option value="Java">Java</option>
+          <option value="TypeScript">TypeScript</option><option value="Python">Python</option>
+          <option value="Go">Go</option><option value="Rust">Rust</option>
+          <option value="Java">Java</option><option value="Kotlin">Kotlin</option>
         </select>
       </div>
-      <textarea id="code" placeholder="ここにレガシーコードを貼り付けてください...">Sub Hello()
+      <div class="field">
+        <textarea id="code">Sub Hello()
   MsgBox "Hi"
 End Sub</textarea>
-      <button class="btn-run" id="btnRun" onclick="analyze()">🚀 解析実行</button>
+      </div>
+      <button class="btn-run" id="btnRun" onclick="analyze()">🚀 <span id="t-runBtn">解析実行</span></button>
       <div class="status-bar" id="statusBar"></div>
     </div>
-
-    <!-- 右：結果パネル -->
     <div class="panel">
       <div class="result-header">
-        <div class="panel-label">解析結果</div>
-        <button class="btn-copy" onclick="copyResult()">コピー</button>
+        <div class="panel-title" id="t-resultPanel">📤 解析結果</div>
+        <button class="btn-copy" id="btnCopy" onclick="copyResult()">コピー</button>
       </div>
       <div class="result-area" id="resultArea">解析結果がここに表示されます</div>
       <div class="receipt-tag" id="receiptTag"></div>
     </div>
   </div>
 </div>
-
 <script>
-  // ★ デプロイ後にCloudflare WorkerのURLに変更する
-  const WORKER_URL = "https://legacy-analyzer.furitsukatsuma.workers.dev";
-
-  async function analyze() {
-    const apiKey = document.getElementById("apiKey").value.trim();
-    const code   = document.getElementById("code").value.trim();
-    const lang   = document.getElementById("lang").value;
-    const targetLang = document.getElementById("targetLang").value;
-    const btn    = document.getElementById("btnRun");
-    const status = document.getElementById("statusBar");
-    const result = document.getElementById("resultArea");
-    const receipt = document.getElementById("receiptTag");
-
-    // バリデーション
-    if (!apiKey) {
-      showKeyStatus("APIキーを入力してください", false);
-      return;
-    }
-    if (!code) {
-      setStatus("error", "コードを入力してください");
-      return;
-    }
-
-    // 実行中UI
-    btn.disabled = true;
-    setStatus("loading", "⏳ Gemini + Claude Haiku で解析中... (10〜30秒)");
-    result.textContent = "";
-    result.classList.remove("has-result");
-    receipt.textContent = "";
-
-    try {
-      const res = await fetch(WORKER_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-API-Key": apiKey,
-        },
-        body: JSON.stringify({ code, lang, targetLang }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok || data.error) {
-        setStatus("error", `❌ ${data.error || "エラーが発生しました"}`);
-        if (res.status === 401 || res.status === 403) {
-          showKeyStatus(data.error, false);
-        }
-        return;
-      }
-
-      // 成功
-      status.style.display = "none";
-      showKeyStatus("✅ キー有効", true);
-      result.textContent = data.result;
-      result.classList.add("has-result");
-      if (data.receipt_id) {
-        receipt.textContent = `🧾 領収書ID: ${data.receipt_id}`;
-      }
-
-    } catch (e) {
-      setStatus("error", `❌ 接続エラー: ${e.message}`);
-    } finally {
-      btn.disabled = false;
-    }
-  }
-
-  function setStatus(type, msg) {
-    const el = document.getElementById("statusBar");
-    el.className = `status-bar ${type}`;
-    el.textContent = msg;
-    el.style.display = "block";
-  }
-
-  function showKeyStatus(msg, ok) {
-    const el = document.getElementById("keyStatus");
-    el.textContent = msg;
-    el.className = `key-status ${ok ? "ok" : "err"}`;
-  }
-
-  function copyResult() {
-    const text = document.getElementById("resultArea").textContent;
-    if (text && text !== "解析結果がここに表示されます") {
-      navigator.clipboard.writeText(text);
-      const btn = document.querySelector(".btn-copy");
-      btn.textContent = "✅ コピー済み";
-      setTimeout(() => btn.textContent = "コピー", 1500);
-    }
-  }
+const WORKER_URL="https://legacy-analyzer.furitsukatsuma.workers.dev";
+const I18N={
+  ja:{apikeys:"🔑 API設定",purchaseKey:"購入者キー（ft-key-...）",byokTitle:"BYOK モード",byokDesc:"自分のAPIキーを使うとコストが0になります",geminiGet:"Gemini キー:",anthropicGet:"Anthropic キー:",geminiKey:"Gemini APIキー（任意）",anthropicKey:"Anthropic APIキー（任意）",modelSelect:"🤖 モデル選択",inputPanel:"📥 入力",modeCode:"💻 コード変換",modeReport:"📊 ビジネスレポート",runBtn:"解析実行",resultPanel:"📤 解析結果",copy:"コピー",placeholder:"解析結果がここに表示されます",loading:"⏳ 解析中... (10〜30秒)",receipt:"🧾 領収書ID:",copied:"✅ コピー済み",keyValid:"✅ キー有効",keyInvalid:"❌ 無効なキー",m1:"Google・高速・無料枠あり",m2:"Anthropic・軽量・安価",m3:"Anthropic・高品質",m4:"OpenAI・バランス型"},
+  en:{apikeys:"🔑 API Settings",purchaseKey:"Purchase Key (ft-key-...)",byokTitle:"BYOK Mode",byokDesc:"Use your own API keys — zero cost",geminiGet:"Gemini key:",anthropicGet:"Anthropic key:",geminiKey:"Gemini API Key (optional)",anthropicKey:"Anthropic API Key (optional)",modelSelect:"🤖 Model Selection",inputPanel:"📥 Input",modeCode:"💻 Code Convert",modeReport:"📊 Business Report",runBtn:"Analyze",resultPanel:"📤 Result",copy:"Copy",placeholder:"Analysis results will appear here",loading:"⏳ Analyzing... (10-30s)",receipt:"🧾 Receipt ID:",copied:"✅ Copied",keyValid:"✅ Key valid",keyInvalid:"❌ Invalid key",m1:"Google・Fast・Free tier",m2:"Anthropic・Light・Cheap",m3:"Anthropic・High quality",m4:"OpenAI・Balanced"},
+  zh:{apikeys:"🔑 API设置",purchaseKey:"购买者密钥（ft-key-...）",byokTitle:"BYOK模式",byokDesc:"使用自己的API密钥，成本为零",geminiGet:"Gemini密钥:",anthropicGet:"Anthropic密钥:",geminiKey:"Gemini API密钥（可选）",anthropicKey:"Anthropic API密钥（可选）",modelSelect:"🤖 模型选择",inputPanel:"📥 输入",modeCode:"💻 代码转换",modeReport:"📊 业务报告",runBtn:"开始分析",resultPanel:"📤 分析结果",copy:"复制",placeholder:"分析结果将显示在此处",loading:"⏳ 分析中...",receipt:"🧾 收据ID:",copied:"✅ 已复制",keyValid:"✅ 密钥有效",keyInvalid:"❌ 无效密钥",m1:"谷歌·快速·免费",m2:"Anthropic·轻量·便宜",m3:"Anthropic·高质量",m4:"OpenAI·均衡"},
+  ko:{apikeys:"🔑 API 설정",purchaseKey:"구매자 키 (ft-key-...)",byokTitle:"BYOK 모드",byokDesc:"자신의 API 키를 사용하면 비용이 0",geminiGet:"Gemini 키:",anthropicGet:"Anthropic 키:",geminiKey:"Gemini API 키 (선택)",anthropicKey:"Anthropic API 키 (선택)",modelSelect:"🤖 모델 선택",inputPanel:"📥 입력",modeCode:"💻 코드 변환",modeReport:"📊 비즈니스 보고서",runBtn:"분석 실행",resultPanel:"📤 분석 결과",copy:"복사",placeholder:"분석 결과가 여기에 표시됩니다",loading:"⏳ 분석 중...",receipt:"🧾 영수증 ID:",copied:"✅ 복사됨",keyValid:"✅ 키 유효",keyInvalid:"❌ 유효하지 않은 키",m1:"구글·빠름·무료",m2:"Anthropic·경량·저렴",m3:"Anthropic·고품질",m4:"OpenAI·균형"},
+  hi:{apikeys:"🔑 API सेटिंग",purchaseKey:"खरीदार कुंजी",byokTitle:"BYOK मोड",byokDesc:"अपनी API कुंजी का उपयोग करें",geminiGet:"Gemini कुंजी:",anthropicGet:"Anthropic कुंजी:",geminiKey:"Gemini API कुंजी (वैकल्पिक)",anthropicKey:"Anthropic API कुंजी (वैकल्पिक)",modelSelect:"🤖 मॉडल चयन",inputPanel:"📥 इनपुट",modeCode:"💻 कोड रूपांतरण",modeReport:"📊 व्यापार रिपोर्ट",runBtn:"विश्लेषण करें",resultPanel:"📤 परिणाम",copy:"कॉपी",placeholder:"विश्लेषण परिणाम यहाँ दिखाई देंगे",loading:"⏳ विश्लेषण हो रहा है...",receipt:"🧾 रसीद ID:",copied:"✅ कॉपी हो गया",keyValid:"✅ कुंजी वैध",keyInvalid:"❌ अमान्य",m1:"गूगल·तेज·मुफ्त",m2:"Anthropic·हल्का·सस्ता",m3:"Anthropic·उच्च गुणवत्ता",m4:"OpenAI·संतुलित"},
+  ne:{apikeys:"🔑 API सेटिङ",purchaseKey:"खरिदकर्ता कुञ्जी",byokTitle:"BYOK मोड",byokDesc:"आफ्नै API कुञ्जी प्रयोग गर्नुस्",geminiGet:"Gemini कुञ्जी:",anthropicGet:"Anthropic कुञ्जी:",geminiKey:"Gemini API कुञ्जी (ऐच्छिक)",anthropicKey:"Anthropic API कुञ्जी (ऐच्छिक)",modelSelect:"🤖 मोडल छनोट",inputPanel:"📥 इनपुट",modeCode:"💻 कोड रूपान्तरण",modeReport:"📊 व्यापार रिपोर्ट",runBtn:"विश्लेषण गर्नुस्",resultPanel:"📤 परिणाम",copy:"कपी",placeholder:"विश्लेषण परिणाम यहाँ देखिनेछ",loading:"⏳ विश्लेषण हुँदैछ...",receipt:"🧾 रसिद ID:",copied:"✅ कपी भयो",keyValid:"✅ कुञ्जी मान्य",keyInvalid:"❌ अमान्य",m1:"गूगल·छिटो·निःशुल्क",m2:"Anthropic·हल्का·सस्तो",m3:"Anthropic·उच्च गुणस्तर",m4:"OpenAI·सन्तुलित"}
+};
+let CL='ja',MODE='code',MODEL='gemini-2.5-flash',PROV='gemini';
+const T=k=>(I18N[CL]||I18N.ja)[k]||k;
+const $=id=>document.getElementById(id);
+function setLang(l,btn){
+  CL=l;
+  document.querySelectorAll('.lang-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const keys=['apikeys','purchaseKey','byokTitle','byokDesc','geminiGet','anthropicGet','geminiKey','anthropicKey','modelSelect','inputPanel','runBtn','resultPanel','m1','m2','m3','m4'];
+  keys.forEach(k=>{const el=$('t-'+k);if(el)el.textContent=T(k)});
+  $('btnCopy').textContent=T('copy');
+  $('modeCode').textContent='💻 '+T('modeCode');
+  $('modeReport').textContent='📊 '+T('modeReport').replace('📊 ','');
+  const ra=$('resultArea');
+  if(!ra.classList.contains('has-result'))ra.textContent=T('placeholder');
+}
+function setMode(m){
+  MODE=m;
+  $('modeCode').classList.toggle('active',m==='code');
+  $('modeReport').classList.toggle('active',m==='report');
+}
+function selectModel(card,model,prov){
+  document.querySelectorAll('.model-card').forEach(c=>c.classList.remove('selected'));
+  card.classList.add('selected');MODEL=model;PROV=prov;
+}
+async function analyze(){
+  const pk=$('purchaseKey').value.trim();
+  const gk=$('geminiKey').value.trim();
+  const ak=$('anthropicKey').value.trim();
+  const code=$('code').value.trim();
+  const lang=$('srcLang').value;
+  const tl=$('targetLang').value;
+  if(!pk){showKey(T('keyInvalid'),false);return;}
+  if(!code){setStatus('error','コードを入力してください');return;}
+  $('btnRun').disabled=true;
+  setStatus('loading',T('loading'));
+  $('resultArea').textContent='';
+  $('resultArea').classList.remove('has-result');
+  $('receiptTag').textContent='';
+  try{
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':pk,...(gk&&{'X-Gemini-Key':gk}),...(ak&&{'X-Anthropic-Key':ak})},body:JSON.stringify({code,lang,targetLang:tl,mode:MODE,model:MODEL,provider:PROV,outputLang:CL})});
+    const data=await res.json();
+    if(!res.ok||data.error){setStatus('error','❌ '+(data.error||'Error'));if(res.status===401||res.status===403)showKey(data.error,false);return;}
+    $('statusBar').style.display='none';
+    showKey(T('keyValid'),true);
+    $('resultArea').textContent=data.result;
+    $('resultArea').classList.add('has-result');
+    if(data.receipt_id)$('receiptTag').textContent=T('receipt')+' '+data.receipt_id;
+  }catch(e){setStatus('error','❌ '+e.message);}
+  finally{$('btnRun').disabled=false;}
+}
+function setStatus(type,msg){const el=$('statusBar');el.className='status-bar '+type;el.textContent=msg;el.style.display='block';}
+function showKey(msg,ok){const el=$('keyStatus');el.textContent=msg;el.className='key-status '+(ok?'ok':'err');}
+function copyResult(){
+  const text=$('resultArea').textContent;
+  if(text&&text!==T('placeholder')){navigator.clipboard.writeText(text);$('btnCopy').textContent=T('copied');setTimeout(()=>$('btnCopy').textContent=T('copy'),1500);}
+}
 </script>
 </body>
 </html>
