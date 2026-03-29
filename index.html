@@ -156,7 +156,7 @@ End Sub</textarea>
         <div class="panel-title" id="t-resultPanel">📤 解析結果</div>
         <button class="btn-copy" id="btnCopy" onclick="copyResult()">コピー</button>
       </div>
-      <div class="result-area" id="resultArea">解析結果がここに表示されます</div>
+      <div id="read-guide">📍 今: <span id="guide-now"></span> ▶ 次: <span id="guide-next"></span></div><div id="followup-wrap"><textarea id="followupInput" placeholder="この結果についてさらに質問..."></textarea><button id="followupBtn" onclick="sendFollowup()">↑ 追加で聞く</button></div><div class="result-area" id="resultArea">解析結果がここに表示されます</div>
       <div class="receipt-tag" id="receiptTag"></div>
     </div>
   </div>
@@ -215,7 +215,7 @@ async function analyze(){
     if(!res.ok||data.error){setStatus('error','❌ '+(data.error||'Error'));if(res.status===401||res.status===403)showKey(data.error,false);return;}
     $('statusBar').style.display='none';
     showKey(T('keyValid'),true);
-    $('resultArea').textContent=data.result;
+    _lastCode=code;renderNestfold(data.result);
     $('resultArea').classList.add('has-result');
     if(data.receipt_id)$('receiptTag').textContent=T('receipt')+' '+data.receipt_id;
   }catch(e){setStatus('error','❌ '+e.message);}
@@ -230,3 +230,78 @@ function copyResult(){
 </script>
 </body>
 </html>
+<style>
+/* === Nestfold === */
+:root.provider-gemini{--hl:rgba(26,115,232,0.18);--border:#1a73e8}
+:root.provider-anthropic{--hl:rgba(212,87,10,0.18);--border:#d4570a}
+:root.provider-openai{--hl:rgba(16,163,127,0.18);--border:#10a37f}
+.result-step{padding:6px 8px;margin:4px 0;border-radius:5px;cursor:pointer;transition:background .2s;white-space:pre-wrap}
+.result-step:hover{background:rgba(255,255,255,0.07)}
+.result-step.reading{background:var(--hl,rgba(255,255,0,0.1));border-left:3px solid var(--border,#888)}
+#read-guide{display:none;font-size:.78rem;padding:6px 12px;border-radius:6px;margin-bottom:8px;background:rgba(255,255,255,.06);border-left:4px solid var(--border,#888);color:#aef}
+#followup-wrap{display:none;flex-direction:column;margin-top:12px;gap:6px}
+#followupInput{width:100%;padding:7px 10px;border-radius:7px;border:1px solid #444;background:#1a1a2e;color:#eee;font-size:.82rem;resize:vertical;min-height:48px;box-sizing:border-box}
+#followupBtn{padding:5px 16px;border-radius:6px;background:var(--border,#555);color:#fff;border:none;cursor:pointer;font-size:.82rem}
+</style>
+<script>
+let _lastCode='';
+function applyProviderTheme(){['provider-gemini','provider-anthropic','provider-openai'].forEach(c=>document.documentElement.classList.remove(c));document.documentElement.classList.add('provider-'+PROV);}
+function renderNestfold(text){
+  applyProviderTheme();
+  const sections=text.split(/\n(?=\d+\.|##\s|【)/).filter(s=>s.trim());
+  const container=$('resultArea');
+  container.style.whiteSpace='pre-wrap';
+  if(sections.length<2){container.textContent=text;$('followup-wrap').style.display='flex';return;}
+  container.innerHTML='';
+  sections.forEach((sec,i)=>{
+    const div=document.createElement('div');
+    div.className='result-step';
+    div.textContent=sec.trim();
+    div.onclick=()=>activateSection(i,sections.length,div);
+    container.appendChild(div);
+  });
+  $('read-guide').style.display='block';
+  $('followup-wrap').style.display='flex';
+  activateSection(0,sections.length,container.querySelector('.result-step'));
+}
+function activateSection(idx,total,el){
+  document.querySelectorAll('.result-step').forEach(s=>s.classList.remove('reading'));
+  el.classList.add('reading');
+  el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  $('guide-now').textContent=el.textContent.slice(0,40)+(el.textContent.length>40?'…':'');
+  $('guide-next').textContent=idx<total-1?'セクション '+(idx+2):'✅ 完了';
+  const codeEl=document.getElementById('code');
+  if(!codeEl)return;
+  const lines=codeEl.value.split('\n');
+  const per=Math.ceil(lines.length/total);
+  const start=lines.slice(0,idx*per).join('\n').length+(idx>0?1:0);
+  const end=lines.slice(0,Math.min((idx+1)*per,lines.length)).join('\n').length;
+  codeEl.focus();codeEl.setSelectionRange(start,end);
+}
+async function sendFollowup(){
+  const q=$('followupInput').value.trim();
+  if(!q||!_lastCode)return;
+  const btn=$('followupBtn');
+  btn.disabled=true;btn.textContent='送信中...';
+  const container=$('resultArea');
+  const qDiv=document.createElement('div');
+  qDiv.className='result-step';
+  qDiv.style.cssText='opacity:.7;border-left:2px solid #666;color:#aaa;';
+  qDiv.textContent='❓ '+q;
+  container.appendChild(qDiv);
+  const aDiv=document.createElement('div');
+  aDiv.className='result-step';aDiv.style.color='#aef';
+  aDiv.textContent='⏳ 回答取得中...';
+  container.appendChild(aDiv);
+  aDiv.scrollIntoView({behavior:'smooth'});
+  try{
+    const gk=$('geminiKey').value.trim();
+    const ak=$('anthropicKey').value.trim();
+    const res=await fetch(WORKER_URL,{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':$('purchaseKey').value.trim(),...(gk?{'X-Gemini-Key':gk}:{}),...(ak?{'X-Anthropic-Key':ak}:{})},body:JSON.stringify({code:_lastCode+'\n\n追加質問: '+q,lang:'Unknown',targetLang:'TypeScript',mode:MODE,model:MODEL,provider:PROV,outputLang:CL})});
+    const data=await res.json();
+    aDiv.textContent=data.result||data.error||'エラー';
+  }catch(e){aDiv.textContent='エラー: '+e.message;}
+  btn.disabled=false;btn.textContent='↑ 追加で聞く';
+  $('followupInput').value='';
+}
+</script>
